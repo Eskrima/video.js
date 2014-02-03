@@ -691,7 +691,11 @@ vjs.Player.prototype.duration = function(seconds){
 
 // Calculates how much time is left. Not in spec, but useful.
 vjs.Player.prototype.remainingTime = function(){
-  return this.duration() - this.currentTime();
+  var timeLeft = this.duration() - this.currentTime();
+  if (timeLeft < 0) {
+    timeLeft = 0;
+  }
+  return timeLeft;
 };
 
 // http://dev.w3.org/html5/spec/video.html#dom-media-buffered

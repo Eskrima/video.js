@@ -149,7 +149,13 @@ vjs.LoadProgressBar.prototype.createEl = function(){
 };
 
 vjs.LoadProgressBar.prototype.update = function(){
-  if (this.el_.style) { this.el_.style.width = vjs.round(this.player_.bufferedPercent() * 100, 2) + '%'; }
+  if (this.el_.style) {
+    var bufferedPercent = this.player_.bufferedPercent();
+    if ( bufferedPercent > 1.0 ) {
+      bufferedPercent = 1.0;
+    }
+    this.el_.style.width = vjs.round(bufferedPercent * 100, 2) + '%';
+  }
 };
 
 
