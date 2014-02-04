@@ -16,7 +16,8 @@ vjs.LoadingSpinner = vjs.Component.extend({
     player.on('canplaythrough', vjs.bind(this, this.hide));
     player.on('playing', vjs.bind(this, this.hide));
     player.on('seeked', vjs.bind(this, this.hide));
-
+    player.on('buffering', vjs.bind(this, this.show));
+    player.on('loadstart', vjs.bind(this, this.hide));
     player.on('seeking', vjs.bind(this, this.show));
 
     // in some browsers seeking does not trigger the 'playing' event,
