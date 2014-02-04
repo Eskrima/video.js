@@ -2018,6 +2018,9 @@ vjs.Component.prototype.unlockShowing = function(){
 
 /**
  * Disable component by making it unshowable
+ *
+ * Currently private because we're movign towards more css-based states.
+ * @private
  */
 vjs.Component.prototype.disable = function(){
   this.hide();
@@ -3414,7 +3417,11 @@ vjs.Player.prototype.duration = function(seconds){
 
 // Calculates how much time is left. Not in spec, but useful.
 vjs.Player.prototype.remainingTime = function(){
-  return this.duration() - this.currentTime();
+  var timeLeft = this.duration() - this.currentTime();
+  if (timeLeft < 0) {
+    timeLeft = 0;
+  }
+  return timeLeft;
 };
 
 // http://dev.w3.org/html5/spec/video.html#dom-media-buffered
@@ -4546,7 +4553,13 @@ vjs.LoadProgressBar.prototype.createEl = function(){
 };
 
 vjs.LoadProgressBar.prototype.update = function(){
-  if (this.el_.style) { this.el_.style.width = vjs.round(this.player_.bufferedPercent() * 100, 2) + '%'; }
+  if (this.el_.style) {
+    var bufferedPercent = this.player_.bufferedPercent();
+    if ( bufferedPercent > 1.0 ) {
+      bufferedPercent = 1.0;
+    }
+    this.el_.style.width = vjs.round(bufferedPercent * 100, 2) + '%';
+  }
 };
 
 
@@ -4950,7 +4963,8 @@ vjs.LoadingSpinner = vjs.Component.extend({
     player.on('canplaythrough', vjs.bind(this, this.hide));
     player.on('playing', vjs.bind(this, this.hide));
     player.on('seeked', vjs.bind(this, this.hide));
-
+    player.on('buffering', vjs.bind(this, this.show));
+    player.on('loadstart', vjs.bind(this, this.hide));
     player.on('seeking', vjs.bind(this, this.show));
 
     // in some browsers seeking does not trigger the 'playing' event,
