@@ -4541,7 +4541,9 @@ vjs.LoadProgressBar = vjs.Component.extend({
   /** @constructor */
   init: function(player, options){
     vjs.Component.call(this, player, options);
-    player.on('progress', vjs.bind(this, this.update));
+    // Built-in HLS does not emit progress event, but we can listen
+    // on timeupdate emitted by the plugin itself
+    player.on('timeupdate', vjs.bind(this, this.update));
   }
 });
 
