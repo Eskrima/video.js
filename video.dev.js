@@ -426,13 +426,8 @@ vjs.fixEvent = function(event) {
     // TODO: Probably best to create a whitelist of event props
     for (var key in old) {
       // Safari 6.0.3 warns you if you try to copy deprecated layerX/Y
-      // Chrome warns you if you try to copy deprecated keyboardEvent.keyLocation
-      if (key !== 'layerX' && key !== 'layerY' && key !== 'keyboardEvent.keyLocation') {
-        // Chrome 32+ warns if you try to copy deprecated returnValue, but
-        // we still want to if preventDefault isn't supported (IE8).
-        if (!(key == 'returnValue' && old.preventDefault)) {
-          event[key] = old[key];
-        }
+      if (key !== 'layerX' && key !== 'layerY') {
+        event[key] = old[key];
       }
     }
 
@@ -1401,10 +1396,6 @@ vjs.Component = vjs.CoreObject.extend({
     this.ready(ready);
     // Don't want to trigger ready here or it will before init is actually
     // finished for all children that run this constructor
-
-    if (options.reportTouchActivity !== false) {
-      this.enableTouchActivity();
-    }
   }
 });
 
@@ -1412,7 +1403,7 @@ vjs.Component = vjs.CoreObject.extend({
  * Dispose of the component and all child components
  */
 vjs.Component.prototype.dispose = function(){
-  this.trigger({ type: 'dispose', 'bubbles': false });
+  this.trigger('dispose');
 
   // Dispose all children.
   if (this.children_) {
@@ -2191,7 +2182,7 @@ vjs.Component.prototype.emitTapEvents = function(){
 
   // When the touch ends, measure how long it took and trigger the appropriate
   // event
-  this.on('touchend', function(event) {
+  this.on('touchend', function() {
     // Proceed only if the touchmove/leave/cancel event didn't happen
     if (couldBeTap === true) {
       // Measure how long the touch lasted
@@ -2206,57 +2197,6 @@ vjs.Component.prototype.emitTapEvents = function(){
     }
   });
 };
-
-/**
- * Report user touch activity when touch events occur
- *
- * User activity is used to determine when controls should show/hide. It's
- * relatively simple when it comes to mouse events, because any mouse event
- * should show the controls. So we capture mouse events that bubble up to the
- * player and report activity when that happens.
- *
- * With touch events it isn't as easy. We can't rely on touch events at the
- * player level, because a tap (touchstart + touchend) on the video itself on
- * mobile devices is meant to turn controls off (and on). User activity is
- * checked asynchronously, so what could happen is a tap event on the video
- * turns the controls off, then the touchend event bubbles up to the player,
- * which if it reported user activity, would turn the controls right back on.
- * (We also don't want to completely block touch events from bubbling up)
- *
- * Also a touchmove, touch+hold, and anything other than a tap is not supposed
- * to turn the controls back on on a mobile device.
- *
- * Here we're setting the default component behavior to report user activity
- * whenever touch events happen, and this can be turned off by components that
- * want touch events to act differently.
- */
-vjs.Component.prototype.enableTouchActivity = function() {
-  var report, touchHolding, touchEnd;
-
-  // listener for reporting that the user is active
-  report = vjs.bind(this.player(), this.player().reportUserActivity);
-
-  this.on('touchstart', function() {
-    report();
-    // For as long as the they are touching the device or have their mouse down,
-    // we consider them active even if they're not moving their finger or mouse.
-    // So we want to continue to update that they are active
-    clearInterval(touchHolding);
-    // report at the same interval as activityCheck
-    touchHolding = setInterval(report, 250);
-  });
-
-  touchEnd = function(event) {
-    report();
-    // stop the interval that maintains activity if the touch is holding
-    clearInterval(touchHolding);
-  };
-
-  this.on('touchmove', report);
-  this.on('touchend', touchEnd);
-  this.on('touchcancel', touchEnd);
-};
-
 /* Button - Base class for all buttons
 ================================================================================ */
 /**
@@ -2302,7 +2242,7 @@ vjs.Button.prototype.createEl = function(type, props){
   props = vjs.obj.merge({
     className: this.buildCSSClass(),
     innerHTML: '<div class="vjs-control-content"><span class="vjs-control-text">' + (this.buttonText || 'Need Text') + '</span></div>',
-    'role': 'button',
+    role: 'button',
     'aria-live': 'polite', // let the screen reader user know that the text of the button may change
     tabIndex: 0
   }, props);
@@ -2378,7 +2318,7 @@ vjs.Slider.prototype.createEl = function(type, props) {
   // Add the slider element class to all sub classes
   props.className = props.className + ' vjs-slider';
   props = vjs.obj.merge({
-    'role': 'slider',
+    role: 'slider',
     'aria-valuenow': 0,
     'aria-valuemin': 0,
     'aria-valuemax': 100,
@@ -2839,10 +2779,6 @@ vjs.Player = vjs.Component.extend({
     // now remove immediately so native controls don't flash.
     // May be turned back on by HTML5 tech if nativeControlsForTouch is true
     tag.controls = false;
-
-    // we don't want the player to report touch activity on itself
-    // see enableTouchActivity in Component
-    options.reportTouchActivity = false;
 
     // Run base component initializing with new options.
     // Builds the element through createEl()
@@ -4110,6 +4046,14 @@ vjs.Player.prototype.listenForUserActivity = function(){
   this.on('keydown', onMouseActivity);
   this.on('keyup', onMouseActivity);
 
+  // Consider any touch events that bubble up to be activity
+  // Certain touches on the tech will be blocked from bubbling because they
+  // toggle controls
+  this.on('touchstart', onMouseDown);
+  this.on('touchmove', onMouseActivity);
+  this.on('touchend', onMouseUp);
+  this.on('touchcancel', onMouseUp);
+
   // Run an interval every 250 milliseconds instead of stuffing everything into
   // the mousemove/touchmove function itself, to prevent performance degradation.
   // `this.reportUserActivity` simply sets this.userActivity_ to true, which
@@ -4597,9 +4541,7 @@ vjs.LoadProgressBar = vjs.Component.extend({
   /** @constructor */
   init: function(player, options){
     vjs.Component.call(this, player, options);
-    // Built-in HLS does not emit progress event, but we can listen
-    // on timeupdate emitted by the plugin itself
-    player.on('timeupdate', vjs.bind(this, this.update));
+    player.on('progress', vjs.bind(this, this.update));
   }
 });
 
@@ -5082,10 +5024,6 @@ vjs.BigPlayButton.prototype.onClick = function(){
 vjs.MediaTechController = vjs.Component.extend({
   /** @constructor */
   init: function(player, options, ready){
-    options = options || {};
-    // we don't want the tech to report user activity automatically.
-    // This is done manually in addControlsListeners
-    options.reportTouchActivity = false;
     vjs.Component.call(this, player, options, ready);
 
     this.initControlsListeners();
@@ -5134,7 +5072,7 @@ vjs.MediaTechController.prototype.initControlsListeners = function(){
 };
 
 vjs.MediaTechController.prototype.addControlsListeners = function(){
-  var userWasActive;
+  var preventBubble, userWasActive;
 
   // Some browsers (Chrome & IE) don't trigger a click on a flash swf, but do
   // trigger mousedown/up.
@@ -5142,20 +5080,37 @@ vjs.MediaTechController.prototype.addControlsListeners = function(){
   // Any touch events are set to block the mousedown event from happening
   this.on('mousedown', this.onClick);
 
-  // If the controls were hidden we don't want that to change without a tap event
-  // so we'll check if the controls were already showing before reporting user
-  // activity
+  // We need to block touch events on the video element from bubbling up,
+  // otherwise they'll signal activity prematurely. The specific use case is
+  // when the video is playing and the controls have faded out. In this case
+  // only a tap (fast touch) should toggle the user active state and turn the
+  // controls back on. A touch and move or touch and hold should not trigger
+  // the controls (per iOS as an example at least)
+  //
+  // We always want to stop propagation on touchstart because touchstart
+  // at the player level starts the touchInProgress interval. We can still
+  // report activity on the other events, but won't let them bubble for
+  // consistency. We don't want to bubble a touchend without a touchstart.
   this.on('touchstart', function(event) {
     // Stop the mouse events from also happening
     event.preventDefault();
+    event.stopPropagation();
+    // Record if the user was active now so we don't have to keep polling it
     userWasActive = this.player_.userActive();
   });
 
-  this.on('touchmove', function(event) {
-    if (userWasActive){
-      this.player().reportUserActivity();
+  preventBubble = function(event){
+    event.stopPropagation();
+    if (userWasActive) {
+      this.player_.reportUserActivity();
     }
-  });
+  };
+
+  // Treat all touch events the same for consistency
+  this.on('touchmove', preventBubble);
+  this.on('touchleave', preventBubble);
+  this.on('touchcancel', preventBubble);
+  this.on('touchend', preventBubble);
 
   // Turn on component tap events
   this.emitTapEvents();
@@ -5205,6 +5160,7 @@ vjs.MediaTechController.prototype.onClick = function(event){
  * Handle a tap on the media element. By default it will toggle the user
  * activity state, which hides and shows the controls.
  */
+
 vjs.MediaTechController.prototype.onTap = function(){
   this.player().userActive(!this.player().userActive());
 };
