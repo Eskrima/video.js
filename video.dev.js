@@ -4224,24 +4224,7 @@ vjs.Player.prototype.listenForUserActivity = function(){
  */
 vjs.ControlBar = vjs.Component.extend();
 
-// hide volume control and mute toggle if ios and android devices
-if(vjs.IS_IOS || vjs.IS_ANDROID){
-	vjs.ControlBar.prototype.options_ = {
-  loadEvent: 'play',
-  children: {
-    'playToggle': {},
-    'currentTimeDisplay': {},
-    'timeDivider': {},
-    'durationDisplay': {},
-    'remainingTimeDisplay': {},
-    'progressControl': {},
-    'fullscreenToggle': {}
-    // 'volumeMenuButton': {}
-  }
-};
-}
-else {
-	vjs.ControlBar.prototype.options_ = {
+vjs.ControlBar.prototype.options_ = {
   loadEvent: 'play',
   children: {
     'playToggle': {},
@@ -4256,14 +4239,12 @@ else {
     // 'volumeMenuButton': {}
   }
 };
-}
 
 vjs.ControlBar.prototype.createEl = function(){
   return vjs.createEl('div', {
     className: 'vjs-control-bar'
   });
-};
-/**
+};/**
  * Button to toggle between play and pause
  * @param {vjs.Player|Object} player
  * @param {Object=} options
@@ -5514,9 +5495,11 @@ vjs.Html5.canPlaySource = function(srcObj){
 };
 
 vjs.Html5.canControlVolume = function(){
-  var volume =  vjs.TEST_VID.volume;
-  vjs.TEST_VID.volume = (volume / 2) + 0.1;
-  return volume !== vjs.TEST_VID.volume;
+	var volume =  vjs.TEST_VID.volume;
+	vjs.TEST_VID.volume = (volume / 2) + 0.1;
+	// iOS can't control volume but Android can
+	// but we also have to remove it on Android
+	return volume !== vjs.TEST_VID.volume && !vjs.IS_ANDROID;
 };
 
 // List of all HTML5 events (various uses).
