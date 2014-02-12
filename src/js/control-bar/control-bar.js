@@ -8,7 +8,24 @@
  */
 vjs.ControlBar = vjs.Component.extend();
 
-vjs.ControlBar.prototype.options_ = {
+// hide volume control and mute toggle if ios and android devices
+if(vjs.IS_IOS || vjs.IS_ANDROID){
+	vjs.ControlBar.prototype.options_ = {
+  loadEvent: 'play',
+  children: {
+    'playToggle': {},
+    'currentTimeDisplay': {},
+    'timeDivider': {},
+    'durationDisplay': {},
+    'remainingTimeDisplay': {},
+    'progressControl': {},
+    'fullscreenToggle': {}
+    // 'volumeMenuButton': {}
+  }
+};
+}
+else {
+	vjs.ControlBar.prototype.options_ = {
   loadEvent: 'play',
   children: {
     'playToggle': {},
@@ -23,6 +40,7 @@ vjs.ControlBar.prototype.options_ = {
     // 'volumeMenuButton': {}
   }
 };
+}
 
 vjs.ControlBar.prototype.createEl = function(){
   return vjs.createEl('div', {
