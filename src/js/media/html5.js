@@ -254,9 +254,11 @@ vjs.Html5.canPlaySource = function(srcObj){
 };
 
 vjs.Html5.canControlVolume = function(){
-  var volume =  vjs.TEST_VID.volume;
-  vjs.TEST_VID.volume = (volume / 2) + 0.1;
-  return volume !== vjs.TEST_VID.volume;
+	var volume =  vjs.TEST_VID.volume;
+	vjs.TEST_VID.volume = (volume / 2) + 0.1;
+	// iOS can't control volume but Android can
+	// but we also have to remove it on Android
+	return volume !== vjs.TEST_VID.volume && !vjs.IS_ANDROID;
 };
 
 // List of all HTML5 events (various uses).
