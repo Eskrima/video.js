@@ -5,11 +5,11 @@ deploy_directory=dist/video-js
 deploy_branch=build
 
 #if no user identity is already set in the current git environment, use this:
-default_username=rtorino
-default_email=torino.raymond@gmail.com
+default_username=sydcanem
+default_email=icqhv.santos@gmail.com
 
 #repository to deploy to. must be readable and writable.
-repo=https://github.com/Eskrima/video.js.git
+repo=git@github.com:Eskrima/video.js.git
 
 if [[ $1 = "-v" || $1 = "--verbose" ]]; then
   verbose=true
@@ -72,7 +72,7 @@ case $diff in
   1)
     set_user_id
     git --work-tree "$deploy_directory" commit -m \
-      "publish: $commit_title"$'\n\n'"generated from commit $commit_hash"
+      "Build: $commit_title"$'\n\n'"generated from commit $commit_hash"
 
     disable_expanded_output
     #--quiet is important here to avoid outputting the repo URL, which may contain a secret token
