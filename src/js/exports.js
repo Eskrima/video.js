@@ -114,11 +114,15 @@ goog.exportProperty(vjs.MediaTechController.prototype.features, 'volumeControl',
 goog.exportProperty(vjs.MediaTechController.prototype.features, 'fullscreenResize', vjs.MediaTechController.prototype.features.fullscreenResize);
 goog.exportProperty(vjs.MediaTechController.prototype.features, 'progressEvents', vjs.MediaTechController.prototype.features.progressEvents);
 goog.exportProperty(vjs.MediaTechController.prototype.features, 'timeupdateEvents', vjs.MediaTechController.prototype.features.timeupdateEvents);
+goog.exportProperty(vjs.MediaTechController.prototype, 'setPoster', vjs.MediaTechController.prototype.setPoster);
+
 
 goog.exportSymbol('videojs.Html5', vjs.Html5);
 goog.exportProperty(vjs.Html5, 'Events', vjs.Html5.Events);
 goog.exportProperty(vjs.Html5, 'isSupported', vjs.Html5.isSupported);
 goog.exportProperty(vjs.Html5, 'canPlaySource', vjs.Html5.canPlaySource);
+goog.exportProperty(vjs.Html5, 'patchCanPlayType', vjs.Html5.patchCanPlayType);
+goog.exportProperty(vjs.Html5, 'unpatchCanPlayType', vjs.Html5.unpatchCanPlayType);
 
 // Export non-standard HTML5 video API methods.
 // Standard method names already protected by default externs.
