@@ -1320,10 +1320,10 @@ vjs.findPosition = function(el) {
 vjs.util = {};
 
 /**
- * Merge two options objects, 
+ * Merge two options objects,
  * recursively merging any plain object properties as well.
  * Previously `deepMerge`
- * 
+ *
  * @param  {Object} obj1 Object to override values in
  * @param  {Object} obj2 Overriding object
  * @return {Object}      New object -- obj1 and obj2 will be untouched
@@ -7100,14 +7100,29 @@ vjs.TextTrackButton.prototype.createItems = function(){
 vjs.CaptionsButton = vjs.TextTrackButton.extend({
   /** @constructor */
   init: function(player, options, ready){
-    vjs.TextTrackButton.call(this, player, options, ready);
+   vjs.TextTrackButton.call(this, player, options, ready);
     this.el_.setAttribute('aria-label','Captions Menu');
+    this.el_.removeChild( this.el_.children[1] );     //delete menu-content : for captions button toggle
   }
 });
 vjs.CaptionsButton.prototype.kind_ = 'captions';
 vjs.CaptionsButton.prototype.buttonText = 'Captions';
 vjs.CaptionsButton.prototype.className = 'vjs-captions-button';
 
+//------------------------------------ Make Captions Button Toggle ---------------------------------
+vjs.CaptionsButton.prototype.onClick = function () {
+   var ccBtn    = document.getElementsByClassName('vjs-captions-button vjs-menu-button vjs-control')[0];
+   var color    = ccBtn.getAttribute( 'style');
+   var playerId = this.player_.id_;
+  if (color === null) {
+    ccBtn.setAttribute( 'style', 'color: #CAEEAC' );
+    this.player_.showTextTrack( vjs.players[playerId].textTracks_[ 0 ].id_, 'captions' );
+  }else{
+    ccBtn.removeAttribute( 'style' );
+    this.player_.showTextTrack( undefined , 'captions');
+  }
+};
+//--------------------------------------------------------------------------------------------------------
 /**
  * The button component for toggling and selecting subtitles
  *
