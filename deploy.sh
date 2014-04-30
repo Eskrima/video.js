@@ -9,7 +9,7 @@ default_username=sydcanem
 default_email=icqhv.santos@gmail.com
 
 #repository to deploy to. must be readable and writable.
-repo=git@github.com:Eskrima/video.js.git
+repo=git@github.com:School-Improvement-Network/video.js.git
 
 if [[ $1 = "-v" || $1 = "--verbose" ]]; then
   verbose=true
