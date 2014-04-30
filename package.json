@@ -21,7 +21,7 @@
   },
   "main": "./dist/video-js/video.js",
   "dependencies": {
-    "videojs-swf": "git+ssh://git@github.com/Eskrima/video-js-swf.git#master"
+    "videojs-swf": "git+ssh://git@github.com/School-Improvement-Network/video-js-swf.git#master"
   },
   "devDependencies": {
     "grunt-cli": "~0.1.0",
