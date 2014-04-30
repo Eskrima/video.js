@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -o errexit #abort if any command fails
 
-deploy_directory=dist/video-js
+deploy_directory=dist/cdn
 deploy_branch=build
 
 #if no user identity is already set in the current git environment, use this:
