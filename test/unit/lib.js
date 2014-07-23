@@ -41,6 +41,14 @@ test('should copy an object', function(){
   deepEqual(asdf,fdsa);
 });
 
+test('should check if an object is an Array', function(){
+  var arr = ['a', 'b', 'c'];
+  ok(vjs.obj.isArray(arr) === true, 'Arr object is an Array');
+
+  var obj = {};
+  ok(vjs.obj.isArray(obj) === false, 'Obj is not an Array');
+});
+
 test('should check if an object is plain', function(){
   var empty = {};
   ok(vjs.obj.isPlain(empty) === true, 'Empty object is plain');
@@ -243,6 +251,16 @@ test('should get an absolute URL', function(){
   ok(vjs.getAbsoluteURL('https://asdf.com/index.html') === 'https://asdf.com/index.html');
 });
 
+test('should parse the details of a url correctly', function(){
+  equal(vjs.parseUrl('#').protocol, window.location.protocol, 'parsed relative url protocol');
+  equal(vjs.parseUrl('#').host, window.location.host, 'parsed relative url host');
+
+  equal(vjs.parseUrl('http://example.com').protocol, 'http:', 'parsed example url protocol');
+  equal(vjs.parseUrl('http://example.com').hostname, 'example.com', 'parsed example url hostname');
+
+  equal(vjs.parseUrl('http://example.com:1234').port, '1234', 'parsed example url port');
+});
+
 test('vjs.findPosition should find top and left position', function() {
   var d = document.createElement('div'),
     position = vjs.findPosition(d);
@@ -259,4 +277,80 @@ test('vjs.findPosition should find top and left position', function() {
   d.getBoundingClientRect = null;
   position = vjs.findPosition(d);
   deepEqual(position, {left: 0, top: 0}, 'If there is no gBCR, we should get zeros');
+});
+
+// LOG TESTS
+test('should confirm logging functions work', function() {
+  var console = window['console'];
+  var origLog = console.log;
+  var origWarn = console.warn;
+  var origError = console.error;
+
+  // in ie8 console.log is apparently not a 'function' so sinon chokes on it
+  // https://github.com/cjohansen/Sinon.JS/issues/386
+  // instead we'll temporarily replace them with functions
+  if (typeof origLog === 'object') {
+    console.log = function(){};
+    console.warn = function(){};
+    console.error = function(){};
+  }
+
+  // stub the global log functions
+  var log = sinon.stub(console, 'log');
+  var error = sinon.stub(console, 'error');
+  var warn = sinon.stub(console, 'warn');
+
+  vjs.log('asdf', 'fdsa');
+  ok(log.called, 'log was called');
+  equal(log.firstCall.args[0], 'VIDEOJS:');
+  equal(log.firstCall.args[1], 'asdf');
+  equal(log.firstCall.args[2], 'fdsa');
+
+  vjs.log.warn('asdf', 'fdsa');
+  ok(warn.called, 'warn was called');
+  equal(warn.firstCall.args[0], 'VIDEOJS:');
+  equal(warn.firstCall.args[1], 'WARN:');
+  equal(warn.firstCall.args[2], 'asdf');
+  equal(warn.firstCall.args[3], 'fdsa');
+
+  vjs.log.error('asdf', 'fdsa');
+  ok(error.called, 'error was called');
+  equal(error.firstCall.args[0], 'VIDEOJS:');
+  equal(error.firstCall.args[1], 'ERROR:');
+  equal(error.firstCall.args[2], 'asdf');
+  equal(error.firstCall.args[3], 'fdsa');
+
+  // tear down sinon
+  log.restore();
+  error.restore();
+  warn.restore();
+
+  // restore ie8
+  if (typeof origLog === 'object') {
+    console.log = origLog;
+    console.warn = origWarn;
+    console.error = origError;
+  }
+});
+
+test('should loop through each element of an array', function() {
+  expect(10);
+  var a = [1, 2, 3];
+  var sum = 0;
+  var i = 0;
+  var thisArg = {};
+
+  vjs.arr.forEach(a, function(item, iterator, array) {
+    sum += item;
+    deepEqual(array, a, 'The array arg should match the original array');
+    equal(i++, iterator, 'The indexes should match');
+    equal(this, thisArg, 'The context should equal the thisArg');
+  }, thisArg);
+  ok(sum, 6);
+
+  vjs.arr.forEach(a, function(){
+    if (this !== vjs) {
+      ok(false, 'default context should be vjs');
+    }
+  });
 });
