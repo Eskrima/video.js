@@ -231,6 +231,8 @@ vjs.expando = 'vdata' + (new Date()).getTime();
  * @private
  */
 vjs.getData = function(el){
+  if (!el) return {};
+
   var id = el[vjs.expando];
   if (!id) {
     id = el[vjs.expando] = vjs.guid++;
@@ -246,6 +248,8 @@ vjs.getData = function(el){
  * @private
  */
 vjs.hasData = function(el){
+  if (!el) return false;
+
   var id = el[vjs.expando];
   return !(!id || vjs.isEmpty(vjs.cache[id]));
 };
@@ -300,6 +304,8 @@ vjs.isEmpty = function(obj) {
  * @private
  */
 vjs.addClass = function(element, classToAdd){
+  if (!element) return;
+
   if ((' '+element.className+' ').indexOf(' '+classToAdd+' ') == -1) {
     element.className = element.className === '' ? classToAdd : element.className + ' ' + classToAdd;
   }
@@ -312,6 +318,8 @@ vjs.addClass = function(element, classToAdd){
  * @private
  */
 vjs.removeClass = function(element, classToRemove){
+  if (!element) return;
+
   var classNames, i;
 
   if (element.className.indexOf(classToRemove) == -1) { return; }

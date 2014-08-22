@@ -392,6 +392,8 @@ vjs.off = function(elem, type, fn) {
  * @private
  */
 vjs.cleanUpEvents = function(elem, type) {
+  if (!elem) return;
+
   var data = vjs.getData(elem);
 
   // Remove the events of a particular type if there are none left
@@ -542,6 +544,9 @@ vjs.fixEvent = function(event) {
  * @private
  */
 vjs.trigger = function(elem, event) {
+  // If element isn't present do nothing;
+  if (!elem) return;
+
   // Fetches element data and a reference to the parent (for bubbling).
   // Don't want to add a data object to cache for every parent,
   // so checking hasData first.
@@ -873,6 +878,8 @@ vjs.expando = 'vdata' + (new Date()).getTime();
  * @private
  */
 vjs.getData = function(el){
+  if (!el) return {};
+
   var id = el[vjs.expando];
   if (!id) {
     id = el[vjs.expando] = vjs.guid++;
@@ -888,6 +895,8 @@ vjs.getData = function(el){
  * @private
  */
 vjs.hasData = function(el){
+  if (!el) return false;
+
   var id = el[vjs.expando];
   return !(!id || vjs.isEmpty(vjs.cache[id]));
 };
@@ -942,6 +951,8 @@ vjs.isEmpty = function(obj) {
  * @private
  */
 vjs.addClass = function(element, classToAdd){
+  if (!element) return;
+
   if ((' '+element.className+' ').indexOf(' '+classToAdd+' ') == -1) {
     element.className = element.className === '' ? classToAdd : element.className + ' ' + classToAdd;
   }
@@ -954,6 +965,8 @@ vjs.addClass = function(element, classToAdd){
  * @private
  */
 vjs.removeClass = function(element, classToRemove){
+  if (!element) return;
+
   var classNames, i;
 
   if (element.className.indexOf(classToRemove) == -1) { return; }
@@ -3332,10 +3345,12 @@ vjs.Player.prototype.dispose = function(){
   this.stopTrackingProgress();
   this.stopTrackingCurrentTime();
 
-  if (this.tech) { this.tech.dispose(); }
+  if (this.tech && this.el_) { this.tech.dispose(); }
 
   // Component dispose
-  vjs.Component.prototype.dispose.call(this);
+  if (this.el_) {
+    vjs.Component.prototype.dispose.call(this);
+  }
 };
 
 vjs.Player.prototype.getTagSettings = function(tag){
@@ -3840,7 +3855,7 @@ vjs.Player.prototype.techGet = function(method){
           vjs.log(e);
         }
       }
-      throw e;
+      this.player().error({ code:'unknown' });
     }
   }
 
