@@ -951,6 +951,8 @@ vjs.isEmpty = function(obj) {
  * @private
  */
 vjs.addClass = function(element, classToAdd){
+  if (!element) return;
+
   if ((' '+element.className+' ').indexOf(' '+classToAdd+' ') == -1) {
     element.className = element.className === '' ? classToAdd : element.className + ' ' + classToAdd;
   }
@@ -963,6 +965,8 @@ vjs.addClass = function(element, classToAdd){
  * @private
  */
 vjs.removeClass = function(element, classToRemove){
+  if (!element) return;
+
   var classNames, i;
 
   if (element.className.indexOf(classToRemove) == -1) { return; }
