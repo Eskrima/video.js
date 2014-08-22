@@ -3345,10 +3345,12 @@ vjs.Player.prototype.dispose = function(){
   this.stopTrackingProgress();
   this.stopTrackingCurrentTime();
 
-  if (this.tech) { this.tech.dispose(); }
+  if (this.tech && this.el_) { this.tech.dispose(); }
 
   // Component dispose
-  vjs.Component.prototype.dispose.call(this);
+  if (this.el_) {
+    vjs.Component.prototype.dispose.call(this);
+  }
 };
 
 vjs.Player.prototype.getTagSettings = function(tag){
@@ -3853,7 +3855,7 @@ vjs.Player.prototype.techGet = function(method){
           vjs.log(e);
         }
       }
-      throw e;
+      this.player().error({ code:'unknown' });
     }
   }
 
