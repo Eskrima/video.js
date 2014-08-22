@@ -392,6 +392,8 @@ vjs.off = function(elem, type, fn) {
  * @private
  */
 vjs.cleanUpEvents = function(elem, type) {
+  if (!elem) return;
+
   var data = vjs.getData(elem);
 
   // Remove the events of a particular type if there are none left
@@ -542,6 +544,9 @@ vjs.fixEvent = function(event) {
  * @private
  */
 vjs.trigger = function(elem, event) {
+  // If element isn't present do nothing;
+  if (!elem) return;
+
   // Fetches element data and a reference to the parent (for bubbling).
   // Don't want to add a data object to cache for every parent,
   // so checking hasData first.
@@ -873,6 +878,8 @@ vjs.expando = 'vdata' + (new Date()).getTime();
  * @private
  */
 vjs.getData = function(el){
+  if (!el) return {};
+
   var id = el[vjs.expando];
   if (!id) {
     id = el[vjs.expando] = vjs.guid++;
@@ -888,6 +895,8 @@ vjs.getData = function(el){
  * @private
  */
 vjs.hasData = function(el){
+  if (!el) return false;
+
   var id = el[vjs.expando];
   return !(!id || vjs.isEmpty(vjs.cache[id]));
 };
